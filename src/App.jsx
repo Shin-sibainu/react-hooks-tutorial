@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -8,6 +9,7 @@ import {
 } from "react";
 import "./App.css";
 import ShinCodeContext from "./main";
+import NumberList from "./NumberList.jsx";
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -40,20 +42,52 @@ function App() {
   };
 
   //useMemo(2回目以降の同じ入力の関数呼び出しに対するコストが削減)
-  const [expensiveCount, setExpensiveCount] = useState(100);
+  const [count01, setCount01] = useState(0);
+  const [count02, setCount02] = useState(0);
 
-  const expensiveCounter = () => {
-    setExpensiveCount(expensiveCount + 100);
-  };
+  // const square = () => {
+  //   console.log("実行されました");
+  //   let i = 0;
+  //   while (i < 2000000000) i++;
+  //   return count02 * count02;
+  // };
 
-  const expensiveFunction = useMemo(() => {
-    //重い処理
+  //変数のメモ化
+  const square = useMemo(() => {
+    //ここのコールバックはcount02が更新される意外のときでは、実行されず、前の保存（メモ化）された結果を呼び出す。
+    console.log("実行されました");
     let i = 0;
-    while (i < 10) {
+    //重い処理 //2000000000
+    while (i < 2) {
       i++;
     }
-    return expensiveCount * expensiveCount;
-  }, [expensiveCount]);
+    return count02 * count02;
+  }, [count02]); //count02が更新されない限り、square関数は実行されずに前の計算結果のキャッシュされた結果を使う。
+
+  //useCallback
+  //関数のメモ化
+  const [number, setNumber] = useState(1);
+  const [dark, setTheme] = useState(false);
+
+  //レンダリングする度にこいつが毎回呼ばれる(生成される)。
+  // const getItems = () => {
+  //   console.log("呼ばれたよ");
+  //   return [number, number + 1, number + 2];
+  // };
+
+  //useMemoと違って、値ではなく関数を返すことができる。
+  const getItems = useCallback(
+    (argsNum) => {
+      console.log("呼ばれたよ");
+      return [number + argsNum, number + 1 + argsNum, number + 2 + argsNum];
+    },
+    [number]
+  );
+
+  const theme = {
+    backgroundColor: dark ? "lightblue" : "white",
+    color: dark ? "lightblue" : "white",
+  };
 
   return (
     <div className="App">
@@ -78,9 +112,27 @@ function App() {
       <button onClick={() => dispatch({ type: "decrement" })}>－</button>
 
       <hr />
-      <h1>UseMemo</h1>
-      <p>カウンター：{expensiveCount}</p>
-      <button onClick={expensiveCounter}>+100</button>
+      <h1>useMemo</h1>
+      <div>カウント１: {count01}</div>
+      <div>カウント２: {count02}</div>
+      {/* <div>square: {square()}</div> */}
+      <div>結果: {square}</div>
+      <button onClick={() => setCount01(count01 + 1)}>＋</button>
+      <button onClick={() => setCount02(count02 + 1)}>＋</button>
+
+      <hr />
+      <h1>UseCallBack</h1>
+      <div style={theme}>
+        <input
+          type="number"
+          value={number}
+          onChange={(e) => setNumber(parseInt(e.target.value))}
+        />
+        <button onClick={() => setTheme((prevTheme) => !prevTheme)}>
+          テーマ切替
+        </button>
+        <NumberList getItems={getItems} />
+      </div>
     </div>
   );
 }
