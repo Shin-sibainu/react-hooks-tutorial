@@ -11,6 +11,7 @@ import "./App.css";
 import ShinCodeContext from "./main";
 // import NumberList from "./NumberList.jsx";
 import SomeChild from "./SomeChild";
+import useLocalStorage from "./useLocalStorage";
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -73,9 +74,13 @@ function App() {
   //   alert(`これは重い処理です。`);
   // };
 
-  const showCount = useCallback(() => {
-    alert(`Count ${counter}`);
-  }, [counter]);
+  // const showCount = useCallback(() => {
+  //   alert(`Count ${counter}`);
+  // }, [counter]);
+
+  //カスタムフックス
+  // const [name, setName] = useState("");
+  const [age, setAge] = useLocalStorage("age", 24);
 
   return (
     <div className="App">
@@ -110,8 +115,13 @@ function App() {
 
       <hr />
       <h1>UseCallBack</h1>
-      <SomeChild showCount={showCount} />
-      <button onClick={() => setCounter(counter + 1)}>＋</button>
+      {/* <SomeChild showCount={showCount} />
+      <button onClick={() => setCounter(counter + 1)}>＋</button> */}
+
+      <hr />
+      <h1>カスタムフック</h1>
+      <p>{age}</p>
+      <button onClick={() => setAge(34)}>年齢をセット</button>
     </div>
   );
 }
